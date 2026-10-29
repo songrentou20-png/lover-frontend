@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 
+const API_URL = 'https://lover-backend-amvt.onrender.com'
+
 function Welcome({ onDismiss, aiName }) {
   useEffect(() => {
     const timer = setTimeout(onDismiss, 3000)
@@ -142,18 +144,30 @@ function App() {
   const [userAvatar, setUserAvatar] = useState(null)
   const [bgImage, setBgImage] = useState(null)
   const [opacity, setOpacity] = useState(0.85)
-  const [messages, setMessages] = useState([
-    { id: 1, role: 'assistant', content: '我在。' },
-    { id: 2, role: 'user', content: '老公，你好。' },
-    { id: 3, role: 'assistant', content: '好。今天怎么样？' },
-  ])
+  const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const sendMessage = () => {
-    if (!input.trim()) return
-    setMessages([...messages, { id: Date.now(), role: 'user', content: input }])
+  const sendMessage = async () => {
+    if (!input.trim() || loading) return
+    const userMsg = { role: 'user', content: input }
+    const newMessages = [...messages, userMsg]
+    setMessages(newMessages)
     setInput('')
+    setLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMessages })
+      })
+      const data = await res.json()
+      setMessages([...newMessages, { role: 'assistant', content: data.content }])
+    } catch (err) {
+      setMessages([...newMessages, { role: 'assistant', content: '出错了，请稍后重试。' }])
+    }
+    setLoading(false)
   }
 
   const AiAvatar = () => aiAvatar
@@ -224,8 +238,8 @@ function App() {
         </div>
 
         <div className="messages">
-          {messages.map(msg => (
-            <div key={msg.id} className={`message ${msg.role}`}>
+          {messages.map((msg, i) => (
+            <div key={i} className={`message ${msg.role}`}>
               {msg.role === 'assistant' ? <AiAvatar /> : <UserAvatar />}
               <div className="bubble" style={{
                 background: msg.role === 'assistant'
@@ -234,6 +248,12 @@ function App() {
               }}>{msg.content}</div>
             </div>
           ))}
+          {loading && (
+            <div className="message assistant">
+              <AiAvatar />
+              <div className="bubble" style={{background: `rgba(50,50,50,${opacity})`}}>…</div>
+            </div>
+          )}
         </div>
 
         <div className="input-area" onClick={e => e.stopPropagation()}>
@@ -242,8 +262,9 @@ function App() {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && sendMessage()}
             placeholder="说点什么…"
+            disabled={loading}
           />
-          <button onClick={sendMessage}>↑</button>
+          <button onClick={sendMessage} disabled={loading}>↑</button>
         </div>
       </div>
     </div>
