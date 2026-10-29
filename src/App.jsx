@@ -167,7 +167,7 @@ function App() {
   if (showWelcome) return <Welcome onDismiss={() => setShowWelcome(false)} aiName={aiName} />
 
   return (
-    <div className="app" style={bgImage ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+    <div className="app">
 
       {showSettings && (
         <SettingsPanel
@@ -204,7 +204,18 @@ function App() {
         </div>
       )}
 
-      <div className="main" onClick={() => sidebarOpen && setSidebarOpen(false)}>
+      <div
+        className="main"
+        style={bgImage ? {
+          backgroundImage: `url(${bgImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          marginLeft: sidebarOpen ? '260px' : '0'
+        } : {
+          marginLeft: sidebarOpen ? '260px' : '0'
+        }}
+        onClick={() => sidebarOpen && setSidebarOpen(false)}
+      >
         <div className="header">
           {!sidebarOpen && <button className="menu-btn" onClick={e => { e.stopPropagation(); setSidebarOpen(true) }}>☰</button>}
           {sidebarOpen && <div style={{width:36}} />}
