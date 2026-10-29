@@ -204,9 +204,9 @@ function App() {
         </div>
       )}
 
-      <div className="main">
+      <div className="main" onClick={() => sidebarOpen && setSidebarOpen(false)}>
         <div className="header">
-          {!sidebarOpen && <button className="menu-btn" onClick={() => setSidebarOpen(true)}>☰</button>}
+          {!sidebarOpen && <button className="menu-btn" onClick={e => { e.stopPropagation(); setSidebarOpen(true) }}>☰</button>}
           {sidebarOpen && <div style={{width:36}} />}
           <span className="header-name">{aiName}</span>
           <div style={{width:36}} />
@@ -225,7 +225,7 @@ function App() {
           ))}
         </div>
 
-        <div className="input-area">
+        <div className="input-area" onClick={e => e.stopPropagation()}>
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
